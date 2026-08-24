@@ -1,0 +1,34 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Juke",
+        "description": "Enter the connection details for your Juke Audio device (found on your local network).",
+        "data": {
+          "host": "Host or IP address",
+          "port": "Port",
+          "username": "Username",
+          "password": "Password",
+          "ssl": "Use HTTPS",
+          "verify_ssl": "Verify SSL certificate"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect. Check the host/port and that the device is on your network.",
+      "invalid_auth": "Invalid username or password.",
+      "unknown": "Unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This Juke device is already configured."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "cpu_usage": { "name": "CPU usage" },
+      "ram_usage": { "name": "RAM usage" },
+      "disk_usage": { "name": "Disk usage" },
+      "internal_temp": { "name": "Internal temperature" }
+    }
+  }
+}
