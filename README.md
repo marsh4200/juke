@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="custom_components/juke/logo.png" width="88" alt="Juke Audio logo" />
+<img src="custom_components/juke/brand/logo.png" width="88" alt="Juke Audio logo" />
 
 # Juke Audio for Home Assistant
 
