@@ -1,96 +1,259 @@
-# Juke Audio — Home Assistant Integration
+<div align="center">
 
-A custom Home Assistant integration for [Juke Audio](https://jukeaudio.com) whole-home
-audio systems, built against the local Juke REST API v3
-(`https://sim.jukeaudio.com/api/v3/apidocs/`).
+<img src="custom_components/juke/logo.png" width="88" alt="Juke Audio logo" />
 
-## What it does
+# Juke Audio for Home Assistant
 
-- **Zones → `media_player` entities.** Each Juke zone (physical audio output) becomes a
-  media player with volume, mute, on/off (zone enable/disable), and source selection
-  (switches the zone's active input).
-- **Devices → diagnostic `sensor` entities.** Each physical Juke device gets CPU usage,
-  RAM usage, disk usage, and internal temperature sensors, grouped under its own device
-  in the HA device registry (with serial number / firmware version as device attributes).
-- **Devices → `button` entity.** Each device also gets a Reboot button
-  (`POST /devices/{id}/reboot`). It's tagged as a restart/config entity, so it shows up
-  under the device's "Diagnostic"/"Configuration" controls rather than the main entity
-  list — rebooting drops audio on every zone that device serves, so it's not something
-  you want triggered accidentally by an automation without meaning to.
-- Polls the device every 30 seconds via a `DataUpdateCoordinator` (local push isn't
-  available — the API only offers polling GETs and outbound webhook subscriptions, which
-  aren't wired up here).
+Control your [Juke Audio](https://jukeaudio.com) whole-home audio system from Home Assistant —
+zones as media players, device health as sensors, and input state for automations.
+
+[![hacs][hacs-shield]][hacs-url]
+[![version][version-shield]][releases-url]
+[![license][license-shield]][license-url]
+[![Home Assistant][ha-shield]][ha-url]
+
+</div>
+
+---
+
+> **Note on the images below:** this repository ships without a live Juke device to
+> screenshot against, so the previews are clearly-labeled illustrative mockups built to
+> match the entities this integration actually creates — not captures of a running
+> Home Assistant instance. If you're using this integration, consider swapping these
+> for real screenshots from your own setup via a PR!
+
+## Screenshots
+
+<table>
+<tr>
+<td width="46%" valign="top">
+
+**Setup**
+
+<img src="docs/screenshots/config-flow-mockup.png" alt="Config flow mockup" width="100%" />
+
+</td>
+<td width="54%" valign="top">
+
+**Entities at a glance**
+
+<img src="docs/screenshots/entities-overview-mockup.png" alt="Entities overview mockup" width="100%" />
+
+</td>
+</tr>
+</table>
+
+<div align="center">
+<img src="docs/screenshots/media-player-card-mockup.png" alt="Zone media player card mockup" width="320" />
+</div>
+
+## Features
+
+| Juke concept | Home Assistant platform | What you get |
+|---|---|---|
+| Zone (physical audio output) | `media_player` | Volume, mute, on/off, source select (active input) |
+| Device (a physical Juke box) | `sensor` | CPU usage, RAM usage, disk usage, internal temperature |
+| Device | `button` | Reboot (tagged as a restart/diagnostic control) |
+| Input (Spotify, AirPlay 2, Optical, USB, ...) | `binary_sensor` | Streaming (is audio actively flowing right now) and Enabled |
+
+State is polled every 30 seconds — the Juke API doesn't offer a push/websocket
+transport, only outbound webhook subscriptions, which this integration doesn't use.
+
+Deliberately **not** exposed: input type, streaming-service credentials, and noise
+threshold. Those are one-time setup values with no automation upside, and credentials
+in particular shouldn't become HA entities — manage those in the Juke app.
 
 ## Installation
 
-### Via HACS (custom repository)
+### HACS (custom repository)
 
-1. In HACS → Integrations → the "..." menu → **Custom repositories**.
+1. HACS → Integrations → the **⋮** menu → **Custom repositories**.
 2. Add this repository's URL, category **Integration**.
-3. Install "Juke Audio", then restart Home Assistant.
+3. Install **Juke Audio**, then restart Home Assistant.
 
 ### Manual
 
-1. Copy the `custom_components/juke` folder from this repo into your Home Assistant
-   `config/custom_components/` directory.
+1. Copy `custom_components/juke` into your Home Assistant `config/custom_components/`
+   directory.
 2. Restart Home Assistant.
 
 ## Configuration
 
-Settings → Devices & Services → **Add Integration** → search for "Juke".
+### Auto-discovery
 
-You'll be asked for:
+Juke boxes advertise themselves on the local network as `jukeaudio.local` (visible in
+their AirPlay/`_raop._tcp` mDNS record) — the same hostname string a router sees in the
+device's DHCP request. This integration registers a `dhcp` matcher on `jukeaudio*`, so
+if Home Assistant's built-in DHCP discovery sees a Juke box on your network, it'll show
+up as a **Discovered** card under Settings → Devices & Services with the host pre-filled
+— you just confirm the credentials.
 
-- **Host/IP** — your Juke device's address on your local network.
-- **Port** — default `80`.
-- **Username / Password** — HTTP Basic Auth credentials. Juke devices ship with the
-  default `Admin` / `Admin`; change these in the Juke app if you haven't already,
-  since this exposes control of your audio system to anyone on your LAN.
-- **Use HTTPS / Verify SSL certificate** — leave off unless you know your device is
-  configured for TLS.
+(`_raop._tcp` itself wasn't used for discovery since it's the generic AirPlay/Shairport
+Sync service type shared by every AirPlay receiver on the market, not something unique
+to Juke — hostname-based DHCP matching is the more reliable signal here.)
 
-The config flow validates connectivity (`GET /ping`) and credentials
-(`GET /zones/info`) before creating the entry.
+If nothing is auto-discovered (some routers/network setups don't propagate DHCP
+hostnames the way HA's discovery expects), manual setup below always works.
 
-## Notes & limitations
+### Manual setup
 
-- The Juke API has no playback/transport state (no play/pause/track metadata) — a zone
-  is fundamentally an audio *output* with volume/mute/source, not a music player, so
-  the `media_player` entity only supports the subset of features that make sense
-  (volume, mute, source select, on/off).
-- Source names shown in Home Assistant come from `GET /inputs/info`; renaming an input
-  in the Juke app will rename the corresponding HA source automatically on the next
-  poll.
-- This was built directly from the published API docs, not against every firmware
-  revision in the field — if your device's `/api/v3` responses differ (extra/missing
-  fields, different enum values), open an issue with the mismatch and it's typically a
-  small fix in `api.py` / `coordinator.py`.
-- Before publishing this as a real HACS repo, update `manifest.json`
-  (`codeowners`, `documentation`, `issue_tracker`) with your actual GitHub handle/repo.
+Settings → Devices & Services → **Add Integration** → search **Juke**.
+
+| Field | Notes |
+|---|---|
+| Host or IP address | Your Juke device's address on your local network |
+| Port | Default `80` |
+| Username / Password | HTTP Basic Auth. Ships as `Admin` / `Admin` — change this in the Juke app if you haven't, since it controls your whole audio system |
+| Use HTTPS / Verify SSL certificate | Leave off unless your device is configured for TLS |
+
+The config flow checks connectivity (`GET /ping`) and validates credentials
+(`GET /zones/info`) before the entry is created, so setup fails fast with a clear
+error instead of creating a broken integration.
+
+## Entity reference
+
+<details>
+<summary><strong>media_player — one per zone</strong></summary>
+
+| Attribute / service | Behavior |
+|---|---|
+| `state` | `on` / `off`, mapped from the zone's enabled flag |
+| `volume_level` | 0.0–1.0, mapped from Juke's 0–100 |
+| `is_volume_muted` | Zone mute state |
+| `source` / `source_list` | Friendly input name, from the inputs assigned to that zone |
+| `media_player.turn_on` / `turn_off` | Enables/disables the zone |
+| `media_player.volume_set`, `volume_mute`, `select_source` | As you'd expect |
+| Extra attributes | `mono`, `volume_eq`, `sampling_rate`, `warnings` |
+
+No transport controls (play/pause/track) — the Juke API doesn't expose playback
+state, only output-level controls.
+
+</details>
+
+<details>
+<summary><strong>sensor — four per device</strong></summary>
+
+`cpu_usage`, `ram_usage`, `disk_usage` (all `%`), `internal_temp` (`°C`). All
+diagnostic-category, grouped under the device's entry in the device registry along
+with its serial number and firmware version.
+
+</details>
+
+<details>
+<summary><strong>binary_sensor — two per input</strong></summary>
+
+- **Streaming** — is audio actively flowing on this input right now. The closest
+  thing this API has to a "now playing" trigger.
+- **Enabled** — is the input turned on in the system.
+
+</details>
+
+<details>
+<summary><strong>button — one per device</strong></summary>
+
+**Reboot** — calls `POST /devices/{id}/reboot`. Restart-class, diagnostic entity —
+rebooting drops audio on every zone that device serves, so it's kept out of the main
+entity list to avoid accidental triggers.
+
+</details>
+
+## Automation ideas
+
+```yaml
+# Turn on the living room lights when Spotify starts streaming
+automation:
+  - alias: "Music on -> lights on"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.spotify_streaming
+        to: "on"
+    action:
+      - service: light.turn_on
+        target:
+          entity_id: light.living_room
+
+# Turn off zones overnight instead of leaving them idle and drawing power
+automation:
+  - alias: "Quiet hours: turn off zones"
+    trigger:
+      - platform: time
+        at: "23:00:00"
+    action:
+      - service: media_player.turn_off
+        target:
+          entity_id:
+            - media_player.living_room
+            - media_player.patio
+
+# Notify if an input that should be enabled ever gets disabled
+automation:
+  - alias: "Spotify input got disabled unexpectedly"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.spotify_enabled
+        to: "off"
+    action:
+      - service: notify.mobile_app_your_phone
+        data:
+          message: "The Spotify input on Juke was disabled."
+
+# Reboot a device automatically if it overheats
+automation:
+  - alias: "Juke device overheating -> reboot"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.juke_device_internal_temp
+        above: 70
+    action:
+      - service: button.press
+        target:
+          entity_id: button.juke_device_reboot
+```
+
+## Limitations
+
+- No playback/transport state (no play/pause, no track metadata) — a zone is an
+  audio *output*, not a music player, in the Juke data model.
+- Polling only, every 30 seconds; not real-time.
+- Built directly from the published API docs
+  (`https://sim.jukeaudio.com/api/v3/apidocs/`), not against every firmware revision
+  in the field. If your device's responses differ, it's usually a small, localized fix
+  in `api.py` or `coordinator.py` — issues and PRs welcome.
 
 ## File layout
 
 ```
 custom_components/juke/
-├── __init__.py        # entry setup/unload, forwards to platforms
-├── api.py              # async REST client (zones/devices/inputs, basic auth)
-├── config_flow.py       # UI config flow (host/port/credentials)
-├── const.py             # domain, defaults, update interval
-├── coordinator.py       # DataUpdateCoordinator polling zones+devices+inputs
-├── media_player.py      # zone -> media_player entities
-├── sensor.py             # device -> diagnostic sensor entities
-├── button.py             # device -> reboot button entity
+├── __init__.py            # entry setup/unload, forwards to platforms
+├── api.py                  # async REST client (zones/devices/inputs, basic auth)
+├── config_flow.py           # UI config flow (host/port/credentials)
+├── const.py                 # domain, defaults, update interval
+├── coordinator.py            # DataUpdateCoordinator polling zones+devices+inputs
+├── media_player.py           # zone -> media_player entities
+├── sensor.py                  # device -> diagnostic sensor entities
+├── button.py                   # device -> reboot button entity
+├── binary_sensor.py             # input -> streaming/enabled binary sensors
 ├── manifest.json
 ├── strings.json
 ├── translations/en.json
-├── icon.png / icon@2x.png     # 256x256 / 512x512 brand icon
-└── logo.png / logo@2x.png      # 256x256 / 512x512 brand logo (wordmark)
+├── icon.png / icon@2x.png        # 256x256 / 512x512 brand icon
+└── logo.png / logo@2x.png         # 256x256 / 512x512 brand logo (wordmark)
 ```
 
-## Branding
+## Contributing
 
-`icon.png`/`icon@2x.png` and `logo.png`/`logo@2x.png` follow the
-[home-assistant/brands](https://github.com/home-assistant/brands) sizing convention
-(256×256 and 512×512 respectively) and ship inside the integration folder itself, so
-they show up in the Devices & Services UI without needing this integration to be
-merged into the official brands repo.
+Issues and PRs welcome — especially real screenshots from a live setup, and reports
+of any place a device's actual API responses diverge from what's implemented here.
+
+## License
+
+[MIT](LICENSE)
+
+[hacs-shield]: https://img.shields.io/badge/HACS-Custom-41BDF5.svg
+[hacs-url]: https://hacs.xyz
+[version-shield]: https://img.shields.io/badge/version-0.1.11-3b6fe0.svg
+[releases-url]: ../../releases
+[license-shield]: https://img.shields.io/badge/license-MIT-9aa1ac.svg
+[license-url]: LICENSE
+[ha-shield]: https://img.shields.io/badge/Home%20Assistant-2024.1%2B-41BDF5.svg
+[ha-url]: https://www.home-assistant.io

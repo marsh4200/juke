@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Connect to Juke",
-        "description": "Enter the connection details for your Juke Audio device (found on your local network).",
+        "description": "Enter the connection details for your Juke Audio device (found on your local network). {discovered_note}",
         "data": {
           "host": "Host or IP address",
           "port": "Port",
@@ -32,6 +32,10 @@
     },
     "button": {
       "reboot": { "name": "Reboot" }
+    },
+    "binary_sensor": {
+      "streaming": { "name": "Streaming" },
+      "input_enabled": { "name": "Enabled" }
     }
   }
 }
