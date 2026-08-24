@@ -16,12 +16,6 @@ zones as media players, device health as sensors, and input state for automation
 
 ---
 
-> **Note on the images below:** this repository ships without a live Juke device to
-> screenshot against, so the previews are clearly-labeled illustrative mockups built to
-> match the entities this integration actually creates — not captures of a running
-> Home Assistant instance. If you're using this integration, consider swapping these
-> for real screenshots from your own setup via a PR!
-
 ## Screenshots
 
 <table>
@@ -30,22 +24,40 @@ zones as media players, device health as sensors, and input state for automation
 
 **Setup**
 
-<img src="docs/screenshots/config-flow-mockup.png" alt="Config flow mockup" width="100%" />
+<img src="docs/screenshots/config-flow.png" alt="Config flow" width="100%" />
 
 </td>
 <td width="54%" valign="top">
 
 **Entities at a glance**
 
-<img src="docs/screenshots/entities-overview-mockup.png" alt="Entities overview mockup" width="100%" />
+Each zone shows up as its own device (`Zone 1`–`Zone 8` here), alongside the physical
+Juke box's diagnostic entities.
+
+<img src="docs/screenshots/integrations-list.png" alt="Integration entries list" width="100%" />
 
 </td>
 </tr>
 </table>
 
-<div align="center">
-<img src="docs/screenshots/media-player-card-mockup.png" alt="Zone media player card mockup" width="320" />
-</div>
+<table>
+<tr>
+<td width="46%" valign="top">
+
+**Zone media player**
+
+<img src="docs/screenshots/zone-media-player.png" alt="Zone media player detail" width="100%" />
+
+</td>
+<td width="54%" valign="top">
+
+**Lovelace control card**
+
+<img src="docs/screenshots/lovelace-control-card.png" alt="Lovelace media control card" width="100%" />
+
+</td>
+</tr>
+</table>
 
 ## Features
 
@@ -242,8 +254,8 @@ custom_components/juke/
 
 ## Contributing
 
-Issues and PRs welcome — especially real screenshots from a live setup, and reports
-of any place a device's actual API responses diverge from what's implemented here.
+Issues and PRs welcome — especially reports of any place a device's actual API
+responses diverge from what's implemented here.
 
 ## License
 
