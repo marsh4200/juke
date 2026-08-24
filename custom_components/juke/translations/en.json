@@ -29,6 +29,9 @@
       "ram_usage": { "name": "RAM usage" },
       "disk_usage": { "name": "Disk usage" },
       "internal_temp": { "name": "Internal temperature" }
+    },
+    "button": {
+      "reboot": { "name": "Reboot" }
     }
   }
 }

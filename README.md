@@ -12,6 +12,11 @@ audio systems, built against the local Juke REST API v3
 - **Devices → diagnostic `sensor` entities.** Each physical Juke device gets CPU usage,
   RAM usage, disk usage, and internal temperature sensors, grouped under its own device
   in the HA device registry (with serial number / firmware version as device attributes).
+- **Devices → `button` entity.** Each device also gets a Reboot button
+  (`POST /devices/{id}/reboot`). It's tagged as a restart/config entity, so it shows up
+  under the device's "Diagnostic"/"Configuration" controls rather than the main entity
+  list — rebooting drops audio on every zone that device serves, so it's not something
+  you want triggered accidentally by an automation without meaning to.
 - Polls the device every 30 seconds via a `DataUpdateCoordinator` (local push isn't
   available — the API only offers polling GETs and outbound webhook subscriptions, which
   aren't wired up here).
@@ -74,7 +79,18 @@ custom_components/juke/
 ├── coordinator.py       # DataUpdateCoordinator polling zones+devices+inputs
 ├── media_player.py      # zone -> media_player entities
 ├── sensor.py             # device -> diagnostic sensor entities
+├── button.py             # device -> reboot button entity
 ├── manifest.json
 ├── strings.json
-└── translations/en.json
+├── translations/en.json
+├── icon.png / icon@2x.png     # 256x256 / 512x512 brand icon
+└── logo.png / logo@2x.png      # 256x256 / 512x512 brand logo (wordmark)
 ```
+
+## Branding
+
+`icon.png`/`icon@2x.png` and `logo.png`/`logo@2x.png` follow the
+[home-assistant/brands](https://github.com/home-assistant/brands) sizing convention
+(256×256 and 512×512 respectively) and ship inside the integration folder itself, so
+they show up in the Devices & Services UI without needing this integration to be
+merged into the official brands repo.
