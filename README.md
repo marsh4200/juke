@@ -66,7 +66,12 @@ Juke box's diagnostic entities.
 | Zone (physical audio output) | `media_player` | Volume, mute, on/off, source select (active input) |
 | Device (a physical Juke box) | `sensor` | CPU usage, RAM usage, disk usage, internal temperature |
 | Device | `button` | Reboot (tagged as a restart/diagnostic control) |
-| Input (Spotify, AirPlay 2, Optical, USB, ...) | `binary_sensor` | Streaming (is audio actively flowing right now) and Enabled |
+| Input (Spotify, AirPlay 2, Optical, USB, ...) | `sensor` | One "Streaming inputs" sensor per device, count of inputs currently streaming, with a per-input streaming/enabled breakdown in its attributes |
+
+Inputs deliberately don't get an entity (and device) each — with several inputs that's a
+lot of clutter for what's diagnostic information. Instead they're folded into a single
+sensor's attributes alongside the device metrics, so the data's still there for
+automations/templates without crowding the entity list.
 
 State is polled every 30 seconds — the Juke API doesn't offer a push/websocket
 transport, only outbound webhook subscriptions, which this integration doesn't use.
@@ -143,20 +148,29 @@ state, only output-level controls.
 </details>
 
 <details>
-<summary><strong>sensor — four per device</strong></summary>
+<summary><strong>sensor — five per device</strong></summary>
 
-`cpu_usage`, `ram_usage`, `disk_usage` (all `%`), `internal_temp` (`°C`). All
-diagnostic-category, grouped under the device's entry in the device registry along
-with its serial number and firmware version.
+`cpu_usage`, `ram_usage`, `disk_usage` (all `%`), `internal_temp` (`°C`), and
+**Streaming inputs** — all diagnostic-category, grouped under the device's entry in
+the device registry along with its serial number and firmware version.
 
-</details>
+Streaming inputs' `state` is the count of inputs currently streaming; its attributes
+carry the full breakdown, one entry per input:
 
-<details>
-<summary><strong>binary_sensor — two per input</strong></summary>
+```yaml
+Spotify:
+  streaming: true
+  enabled: true
+AirPlay 2:
+  streaming: false
+  enabled: true
+Optical:
+  streaming: false
+  enabled: false
+```
 
-- **Streaming** — is audio actively flowing on this input right now. The closest
-  thing this API has to a "now playing" trigger.
-- **Enabled** — is the input turned on in the system.
+Reference it in templates/automations as
+`state_attr('sensor.juke_device_streaming_inputs', 'Spotify')`.
 
 </details>
 
@@ -176,9 +190,9 @@ entity list to avoid accidental triggers.
 automation:
   - alias: "Music on -> lights on"
     trigger:
-      - platform: state
-        entity_id: binary_sensor.spotify_streaming
-        to: "on"
+      - platform: template
+        value_template: >
+          {{ state_attr('sensor.juke_device_streaming_inputs', 'Spotify').streaming }}
     action:
       - service: light.turn_on
         target:
@@ -201,9 +215,9 @@ automation:
 automation:
   - alias: "Spotify input got disabled unexpectedly"
     trigger:
-      - platform: state
-        entity_id: binary_sensor.spotify_enabled
-        to: "off"
+      - platform: template
+        value_template: >
+          {{ not state_attr('sensor.juke_device_streaming_inputs', 'Spotify').enabled }}
     action:
       - service: notify.mobile_app_your_phone
         data:
@@ -242,9 +256,8 @@ custom_components/juke/
 ├── const.py                 # domain, defaults, update interval
 ├── coordinator.py            # DataUpdateCoordinator polling zones+devices+inputs
 ├── media_player.py           # zone -> media_player entities
-├── sensor.py                  # device -> diagnostic sensor entities
+├── sensor.py                  # device -> diagnostic sensors + input streaming summary
 ├── button.py                   # device -> reboot button entity
-├── binary_sensor.py             # input -> streaming/enabled binary sensors
 ├── manifest.json
 ├── strings.json
 ├── translations/en.json

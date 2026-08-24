@@ -28,14 +28,11 @@
       "cpu_usage": { "name": "CPU usage" },
       "ram_usage": { "name": "RAM usage" },
       "disk_usage": { "name": "Disk usage" },
-      "internal_temp": { "name": "Internal temperature" }
+      "internal_temp": { "name": "Internal temperature" },
+      "streaming_inputs": { "name": "Streaming inputs" }
     },
     "button": {
       "reboot": { "name": "Reboot" }
-    },
-    "binary_sensor": {
-      "streaming": { "name": "Streaming" },
-      "input_enabled": { "name": "Enabled" }
     }
   }
 }
