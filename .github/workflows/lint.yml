@@ -1,0 +1,52 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ruff:
+    name: Ruff
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Run ruff check
+        run: ruff check custom_components/juke
+
+      - name: Run ruff format check
+        run: ruff format --check custom_components/juke
+
+  syntax:
+    name: Python syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Compile all modules
+        run: python -m py_compile custom_components/juke/*.py
+
+      - name: Validate JSON files
+        run: |
+          python -c "
+          import json, glob
+          for f in glob.glob('custom_components/juke/**/*.json', recursive=True):
+              json.load(open(f))
+              print(f, 'OK')
+          "

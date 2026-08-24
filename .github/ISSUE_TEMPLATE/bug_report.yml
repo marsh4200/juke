@@ -1,0 +1,64 @@
+name: Bug report
+description: Something in the integration isn't working as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, check the README's Limitations section — this integration was
+        built from the published API docs, not tested against every firmware
+        revision, so some mismatches are expected and usually a quick fix.
+
+  - type: input
+    id: ha-version
+    attributes:
+      label: Home Assistant version
+      placeholder: "2024.x.x"
+    validations:
+      required: true
+
+  - type: input
+    id: integration-version
+    attributes:
+      label: Juke Audio integration version
+      description: Settings → Devices & Services → Juke Audio → shows the version
+      placeholder: "0.1.x"
+    validations:
+      required: true
+
+  - type: input
+    id: device-model
+    attributes:
+      label: Juke device model / firmware version
+      description: Found via the Juke app, or the integration's device page
+      placeholder: "e.g. Juke Plus, firmware 4.3.4"
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you expect, and what actually happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1.
+        2.
+        3.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: |
+        Enable debug logging for a clearer picture:
+        ```yaml
+        logger:
+          logs:
+            custom_components.juke: debug
+        ```
+      render: shell

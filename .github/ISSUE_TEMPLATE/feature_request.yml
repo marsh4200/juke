@@ -1,0 +1,29 @@
+name: Feature request
+description: Suggest an entity, control, or capability this integration doesn't have yet
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What would you like added?
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: What's the use case?
+      description: >-
+        This integration deliberately keeps setup-only settings (credentials,
+        input type, noise threshold, etc.) out of Home Assistant — automation
+        value is the bar. What would you actually do with this once it's an
+        entity?
+    validations:
+      required: true
+
+  - type: input
+    id: api-endpoint
+    attributes:
+      label: Relevant Juke API endpoint (if known)
+      description: See https://sim.jukeaudio.com/api/v3/apidocs/
+      placeholder: "e.g. PUT /zones/{zone_id}/volume_eq"
