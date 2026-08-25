@@ -6,6 +6,7 @@ input ("source"). We map that as closely as possible onto the media_player
 entity model: on/off = zone enabled, source = active input, source_list =
 the inputs assigned to that zone.
 """
+
 from __future__ import annotations
 
 import logging
@@ -157,7 +158,8 @@ class JukeZoneMediaPlayer(CoordinatorEntity[JukeCoordinator], MediaPlayerEntity)
         try:
             await self._client.set_zone_enabled(self._zone_id, enable)
         except JukeApiError as err:
-            _LOGGER.error("Failed to %s zone %s: %s", "enable" if enable else "disable", self._zone_id, err)
+            action = "enable" if enable else "disable"
+            _LOGGER.error("Failed to %s zone %s: %s", action, self._zone_id, err)
             return
         await self.coordinator.async_request_refresh()
 

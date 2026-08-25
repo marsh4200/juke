@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="custom_components/juke/brand/logo.png" width="88" alt="Juke Audio logo" />
+<img src="custom_components/juke/logo.png" width="88" alt="Juke Audio logo" />
 
 # Juke Audio for Home Assistant
 
@@ -11,6 +11,8 @@ zones as media players, device health as sensors, and input state for automation
 [![version][version-shield]][releases-url]
 [![license][license-shield]][license-url]
 [![Home Assistant][ha-shield]][ha-url]
+[![Validate][validate-shield]][validate-url]
+[![Lint][lint-shield]][lint-url]
 
 </div>
 
@@ -263,12 +265,34 @@ custom_components/juke/
 ├── translations/en.json
 ├── icon.png / icon@2x.png        # 256x256 / 512x512 brand icon
 └── logo.png / logo@2x.png         # 256x256 / 512x512 brand logo (wordmark)
+
+.github/
+├── workflows/
+│   ├── validate.yml    # hassfest + HACS validation, on push/PR/nightly
+│   └── lint.yml         # ruff check + format check, py_compile, JSON validation
+├── ISSUE_TEMPLATE/
+│   ├── bug_report.yml
+│   ├── feature_request.yml
+│   └── config.yml       # disables blank issues, forces a template
+└── pull_request_template.md
 ```
+
+## CI
+
+Every push and PR runs two workflows: **Validate** (hassfest's structural checks on
+`manifest.json`/`strings.json`/etc., plus HACS's own repository validation) and
+**Lint** (`ruff check` + `ruff format --check` against `custom_components/juke`,
+a Python syntax compile, and JSON validation). Validate also runs nightly, since
+hassfest/HACS rule updates can flag a previously-passing repo without any code
+change on this end.
 
 ## Contributing
 
 Issues and PRs welcome — especially reports of any place a device's actual API
-responses diverge from what's implemented here.
+responses diverge from what's implemented here. Opening an issue uses one of the
+bug report / feature request templates (blank issues are disabled so there's always
+enough context to act on). Before opening a PR, run `ruff check custom_components/juke`
+and `ruff format custom_components/juke` locally — the same checks run in CI.
 
 ## License
 
@@ -276,9 +300,13 @@ responses diverge from what's implemented here.
 
 [hacs-shield]: https://img.shields.io/badge/HACS-Custom-41BDF5.svg
 [hacs-url]: https://hacs.xyz
-[version-shield]: https://img.shields.io/badge/version-0.1.11-3b6fe0.svg
+[version-shield]: https://img.shields.io/badge/version-0.1.23-3b6fe0.svg
 [releases-url]: ../../releases
 [license-shield]: https://img.shields.io/badge/license-MIT-9aa1ac.svg
 [license-url]: LICENSE
 [ha-shield]: https://img.shields.io/badge/Home%20Assistant-2024.1%2B-41BDF5.svg
 [ha-url]: https://www.home-assistant.io
+[validate-shield]: ../../actions/workflows/validate.yml/badge.svg
+[validate-url]: ../../actions/workflows/validate.yml
+[lint-shield]: ../../actions/workflows/lint.yml/badge.svg
+[lint-url]: ../../actions/workflows/lint.yml

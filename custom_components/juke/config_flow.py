@@ -1,11 +1,11 @@
 """Config flow for the Juke Audio integration."""
+
 from __future__ import annotations
 
 import logging
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -22,7 +22,7 @@ try:  # HA >= 2024.5
 except ImportError:  # pragma: no cover - older HA
     from homeassistant.data_entry_flow import FlowResult as ConfigFlowResult
 
-from .api import JukeApiClient, JukeAuthError, JukeConnectionError, JukeApiError
+from .api import JukeApiClient, JukeApiError, JukeAuthError, JukeConnectionError
 from .const import (
     CONF_HOST,
     CONF_PORT,
@@ -40,7 +40,9 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def _user_schema(host_default: str | None = None) -> vol.Schema:
-    host_key = vol.Required(CONF_HOST, default=host_default) if host_default else vol.Required(CONF_HOST)
+    host_key = (
+        vol.Required(CONF_HOST, default=host_default) if host_default else vol.Required(CONF_HOST)
+    )
     return vol.Schema(
         {
             host_key: str,
@@ -107,9 +109,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         self._discovered_host: str | None = None
 
-    async def async_step_dhcp(
-        self, discovery_info: DhcpServiceInfo
-    ) -> ConfigFlowResult:
+    async def async_step_dhcp(self, discovery_info: DhcpServiceInfo) -> ConfigFlowResult:
         """Handle discovery via DHCP.
 
         Juke boxes run an embedded Linux/Shairport Sync stack that advertises
@@ -138,9 +138,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.context["title_placeholders"] = {"host": host}
         return await self.async_step_user()
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -157,7 +155,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
-            except Exception:  # noqa: BLE001
+            except Exception:
                 _LOGGER.exception("Unexpected exception during Juke config flow")
                 errors["base"] = "unknown"
             else:

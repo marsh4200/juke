@@ -1,4 +1,5 @@
 """Constants for the Juke Audio integration."""
+
 from datetime import timedelta
 
 DOMAIN = "juke"

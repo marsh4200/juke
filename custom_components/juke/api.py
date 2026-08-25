@@ -7,9 +7,9 @@ HTTP Basic Auth (default credentials are Admin/Admin). This client only wraps
 the handful of endpoints the Home Assistant integration needs: zones,
 devices, and inputs.
 """
+
 from __future__ import annotations
 
-import asyncio
 import logging
 from typing import Any
 
@@ -75,20 +75,16 @@ class JukeApiClient:
                 ssl=self._ssl,
             ) as resp:
                 if resp.status in (401, 403):
-                    raise JukeAuthError(
-                        f"Authentication failed for {url} (HTTP {resp.status})"
-                    )
+                    raise JukeAuthError(f"Authentication failed for {url} (HTTP {resp.status})")
                 if resp.status >= 400:
                     body = await resp.text()
-                    raise JukeApiError(
-                        f"Juke API error {resp.status} for {method} {url}: {body}"
-                    )
+                    raise JukeApiError(f"Juke API error {resp.status} for {method} {url}: {body}")
                 if resp.content_type == "application/json":
                     return await resp.json()
                 return await resp.text()
         except JukeApiError:
             raise
-        except (aiohttp.ClientConnectorError, asyncio.TimeoutError) as err:
+        except (TimeoutError, aiohttp.ClientConnectorError) as err:
             raise JukeConnectionError(f"Could not reach Juke device at {url}") from err
         except aiohttp.ClientError as err:
             raise JukeApiError(f"Unexpected error calling {url}: {err}") from err
@@ -125,9 +121,7 @@ class JukeApiClient:
         await self._request("PUT", f"/zones/{zone_id}/volume", json={"volume": volume})
 
     async def set_zone_volume_eq(self, zone_id: str, volume_eq: list[int]) -> None:
-        await self._request(
-            "PUT", f"/zones/{zone_id}/volume_eq", json={"volume_eq": volume_eq}
-        )
+        await self._request("PUT", f"/zones/{zone_id}/volume_eq", json={"volume_eq": volume_eq})
 
     async def set_zone_muted(self, zone_id: str, enable: bool) -> None:
         await self._request("PUT", f"/zones/{zone_id}/mute", json={"enable": enable})
@@ -142,24 +136,16 @@ class JukeApiClient:
         return await self._request("GET", f"/zones/{zone_id}/input/active")
 
     async def set_zone_active_input(self, zone_id: str, input_id: str) -> None:
-        await self._request(
-            "PUT", f"/zones/{zone_id}/input/active", json={"input_id": input_id}
-        )
+        await self._request("PUT", f"/zones/{zone_id}/input/active", json={"input_id": input_id})
 
     async def set_zone_inputs(self, zone_id: str, input_ids: list[str]) -> None:
-        await self._request(
-            "PUT", f"/zones/{zone_id}/input", json={"input_id": input_ids}
-        )
+        await self._request("PUT", f"/zones/{zone_id}/input", json={"input_id": input_ids})
 
     async def add_zone_input(self, zone_id: str, input_ids: list[str]) -> None:
-        await self._request(
-            "PUT", f"/zones/{zone_id}/input/add", json={"input_id": input_ids}
-        )
+        await self._request("PUT", f"/zones/{zone_id}/input/add", json={"input_id": input_ids})
 
     async def remove_zone_input(self, zone_id: str, input_ids: list[str]) -> None:
-        await self._request(
-            "PUT", f"/zones/{zone_id}/input/remove", json={"input_id": input_ids}
-        )
+        await self._request("PUT", f"/zones/{zone_id}/input/remove", json={"input_id": input_ids})
 
     async def get_zone_warnings(self, zone_id: str) -> dict:
         return await self._request("GET", f"/zones/{zone_id}/warnings")

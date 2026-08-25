@@ -1,4 +1,5 @@
 """Reboot button for each physical Juke device."""
+
 from __future__ import annotations
 
 import logging
@@ -37,9 +38,7 @@ async def async_setup_entry(
             if device_id in known_device_ids:
                 continue
             known_device_ids.add(device_id)
-            new_entities.append(
-                JukeRebootButton(coordinator, client, entry.entry_id, device_id)
-            )
+            new_entities.append(JukeRebootButton(coordinator, client, entry.entry_id, device_id))
         if new_entities:
             async_add_entities(new_entities)
 

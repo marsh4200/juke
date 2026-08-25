@@ -1,0 +1,9 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = [
+    "UP007",  # Optional[X] vs X | None - both used across HA versions we support
+]

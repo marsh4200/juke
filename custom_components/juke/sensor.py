@@ -7,6 +7,7 @@ which is a lot of clutter for what's fundamentally diagnostic information.
 Instead, streaming/enabled state for every input is rolled into a single
 "Streaming inputs" sensor's attributes, alongside the existing device metrics.
 """
+
 from __future__ import annotations
 
 import logging
@@ -20,7 +21,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE, UnitOfTemperature, EntityCategory
+from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -98,9 +99,7 @@ async def async_setup_entry(
                 new_entities.append(
                     JukeDeviceSensor(coordinator, entry.entry_id, device_id, description)
                 )
-            new_entities.append(
-                JukeInputsSensor(coordinator, entry.entry_id, device_id)
-            )
+            new_entities.append(JukeInputsSensor(coordinator, entry.entry_id, device_id))
         if new_entities:
             async_add_entities(new_entities)
 
