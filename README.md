@@ -66,21 +66,26 @@ Juke box's diagnostic entities.
 | Juke concept | Home Assistant platform | What you get |
 |---|---|---|
 | Zone (physical audio output) | `media_player` | Volume, mute, on/off, source select (active input) |
+| Input (General / Restricted General class) | `media_player` | Volume where supported (USB/RCA/Optical), on/off (enable/disable), source select (input type — General class only) |
 | Device (a physical Juke box) | `sensor` | CPU usage, RAM usage, disk usage, internal temperature |
+| Device | `sensor` | One "Streaming inputs" summary sensor per device, count of inputs currently streaming, with a per-input streaming/enabled breakdown in its attributes |
 | Device | `button` | Reboot (tagged as a restart/diagnostic control) |
-| Input (Spotify, AirPlay 2, Optical, USB, ...) | `sensor` | One "Streaming inputs" sensor per device, count of inputs currently streaming, with a per-input streaming/enabled breakdown in its attributes |
 
-Inputs deliberately don't get an entity (and device) each — with several inputs that's a
-lot of clutter for what's diagnostic information. Instead they're folded into a single
-sensor's attributes alongside the device metrics, so the data's still there for
-automations/templates without crowding the entity list.
+Each input (General or Restricted General class) gets its own `media_player` entity and
+device, alongside the existing "Streaming inputs" summary sensor — the summary stays
+around for quick automations/templates, the per-input entities are there when you want
+to see or control one directly. Zone-based Spotify/AirPlay2 pseudo-inputs (they're
+tightly coupled to whichever zone they belong to) don't get their own entity, since
+there's nothing independently useful to control on them.
 
 State is polled every 30 seconds — the Juke API doesn't offer a push/websocket
 transport, only outbound webhook subscriptions, which this integration doesn't use.
 
-Deliberately **not** exposed: input type, streaming-service credentials, and noise
-threshold. Those are one-time setup values with no automation upside, and credentials
-in particular shouldn't become HA entities — manage those in the Juke app.
+Deliberately **not** exposed: streaming-service credentials and noise threshold. Those
+are one-time setup values with no automation upside, and credentials in particular
+shouldn't become HA entities — manage those in the Juke app. Input type *is* exposed
+(as `source`/`select_source` on the input's `media_player` entity) for General-class
+inputs, since the API allows changing it and it's a reasonable thing to automate.
 
 ## Installation
 
@@ -146,6 +151,22 @@ error instead of creating a broken integration.
 
 No transport controls (play/pause/track) — the Juke API doesn't expose playback
 state, only output-level controls.
+
+</details>
+
+<details>
+<summary><strong>media_player — one per input (General / Restricted General class)</strong></summary>
+
+| Attribute / service | Behavior |
+|---|---|
+| `state` | `on` / `off`, mapped from the input's enabled flag |
+| `volume_level` | 0.0–1.0, mapped from Juke's 0–100 — only present for USB/RCA/Optical inputs; volume control is omitted entirely for inputs where the API reports no volume |
+| `source` / `source_list` | The input's type / its available types — `select_source` only offered for General-class inputs, since the API rejects type changes on Restricted General ones |
+| `media_player.turn_on` / `turn_off` | Enables/disables the input |
+| `media_player.volume_set`, `select_source` | As you'd expect, where supported |
+| Extra attributes | `input_class`, `streaming`, `zones` (the zone ids this input is currently mapped to) |
+
+Zone-based Spotify/AirPlay2 pseudo-inputs are skipped — see [Features](#features) above.
 
 </details>
 
