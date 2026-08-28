@@ -51,11 +51,11 @@ SUPPORTED_FEATURES = (
 # zone-based pseudo-inputs) are excluded - see module docstring.
 INPUT_ENTITY_CLASSES = (0, 3)
 
-# Some Juke hardware exposes a firmware/diagnostic input (a reference "Test
-# Tone" source used for speaker-wiring verification, not a real audio
-# source) alongside the real inputs. It's not something end users should
-# see as an entity or be able to select as a zone source.
-EXCLUDED_INPUT_NAMES = frozenset({"test tone"})
+# Some Juke hardware exposes firmware/diagnostic pseudo-inputs alongside the
+# real ones - a "Test Tone" reference source for speaker-wiring verification,
+# and a "Music Player" entry that isn't a real, usable audio source either.
+# Neither belongs in the entity list or a zone's selectable sources.
+EXCLUDED_INPUT_NAMES = frozenset({"test tone", "music player"})
 
 
 def _is_real_input(info: dict) -> bool:
