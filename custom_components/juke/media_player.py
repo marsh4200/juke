@@ -51,6 +51,18 @@ SUPPORTED_FEATURES = (
 # zone-based pseudo-inputs) are excluded - see module docstring.
 INPUT_ENTITY_CLASSES = (0, 3)
 
+# Some Juke hardware exposes a firmware/diagnostic input (a reference "Test
+# Tone" source used for speaker-wiring verification, not a real audio
+# source) alongside the real inputs. It's not something end users should
+# see as an entity or be able to select as a zone source.
+EXCLUDED_INPUT_NAMES = frozenset({"test tone"})
+
+
+def _is_real_input(info: dict) -> bool:
+    """Filter out diagnostic-only pseudo-inputs like the Test Tone source."""
+    name = (info.get("name") or "").strip().lower()
+    return name not in EXCLUDED_INPUT_NAMES
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -79,6 +91,8 @@ async def async_setup_entry(
                 continue
             known_input_ids.add(input_id)
             if info.get("input_class") not in INPUT_ENTITY_CLASSES:
+                continue
+            if not _is_real_input(info):
                 continue
             new_entities.append(JukeInputMediaPlayer(coordinator, client, entry.entry_id, input_id))
 
@@ -153,8 +167,15 @@ class JukeZoneMediaPlayer(CoordinatorEntity[JukeCoordinator], MediaPlayerEntity)
     @property
     def source_list(self) -> list[str]:
         input_ids = self._zone.get("input") or []
-        names = [self.coordinator.data.input_name(i) for i in input_ids]
-        return [n for n in names if n]
+        names = []
+        for input_id in input_ids:
+            info = self.coordinator.data.inputs.get(input_id)
+            if info is not None and not _is_real_input(info):
+                continue
+            name = self.coordinator.data.input_name(input_id)
+            if name:
+                names.append(name)
+        return names
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
