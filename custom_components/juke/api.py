@@ -139,13 +139,13 @@ class JukeApiClient:
         await self._request("PUT", f"/zones/{zone_id}/input/active", json={"input_id": input_id})
 
     async def set_zone_inputs(self, zone_id: str, input_ids: list[str]) -> None:
-        await self._request("PUT", f"/zones/{zone_id}/input", json={"input_id": input_ids})
+        await self._request("PUT", f"/zones/{zone_id}/input", json={"input_ids": input_ids})
 
     async def add_zone_input(self, zone_id: str, input_ids: list[str]) -> None:
-        await self._request("PUT", f"/zones/{zone_id}/input/add", json={"input_id": input_ids})
+        await self._request("PUT", f"/zones/{zone_id}/input/add", json={"input_ids": input_ids})
 
     async def remove_zone_input(self, zone_id: str, input_ids: list[str]) -> None:
-        await self._request("PUT", f"/zones/{zone_id}/input/remove", json={"input_id": input_ids})
+        await self._request("PUT", f"/zones/{zone_id}/input/remove", json={"input_ids": input_ids})
 
     async def get_zone_warnings(self, zone_id: str) -> dict:
         return await self._request("GET", f"/zones/{zone_id}/warnings")
